@@ -5,14 +5,13 @@ import (
 )
 
 func TestToken(t *testing.T) {
-	ident := "x"
-	identType := LookupIdent(ident)
-	if identType != IDENT {
-		t.Fatalf("get ident fail\n")
-	}
-	ident = "fn"
-	identType = LookupIdent(ident)
-	if identType != FUNCTION {
-		t.Fatalf("get function fail\n")
+	ident := []string{"x", "fn", "return", "false", "if", "true"}
+	expectedType :=[]TokenType{IDENT, FUNCTION, RETURN, FALSE, IF, TRUE}
+	for i, curIdent := range ident {
+		curExpectType := expectedType[i]
+		typep := LookupIdent(curIdent)
+		if typep != curExpectType {
+			t.Fatalf("test fail, expect: %v, got %v\n", curExpectType, typep)
+		}
 	}
 }

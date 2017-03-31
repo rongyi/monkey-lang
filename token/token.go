@@ -8,7 +8,7 @@ const (
 
 	IDENT = "IDENT"
 	INT = "INT"
-	string = "string"
+	STRING = "STRING"
 
 
 	LET = "LET"
