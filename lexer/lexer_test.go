@@ -130,7 +130,8 @@ if (5 < 10) {
 	for i, curExpect := range tests {
 		curTok := l.NextToken()
 		if curTok.Type != curExpect.expectedType {
-			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q", i, curExpect.expectedType, curTok.Type)
+			t.Fatalf("tests[%d] - tokentype wrong. expected=%q, got=%q, inputvalue: %s\n", i,
+				curExpect.expectedType, curTok.Type, curTok.Literal)
 		}
 		if curTok.Literal != curExpect.expectedLiteral {
 			t.Fatalf("tests[%d] - literal wrong. expected=%q, got=%q", i, curExpect.expectedLiteral, curTok.Literal)
