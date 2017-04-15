@@ -50,7 +50,7 @@ type LetStatement struct {
 
 func (ls *LetStatement) String() string {
 	var out bytes.Buffer
-	out.WriteString(ls.TokenLiteral() + "")
+	out.WriteString(ls.TokenLiteral() + " ")
 	out.WriteString(ls.Name.String())
 	out.WriteString(" = ")
 
