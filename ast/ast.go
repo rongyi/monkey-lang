@@ -69,6 +69,7 @@ func (oe *InfixExpression) expressionNode() {}
 func (oe *InfixExpression) TokenLiteral() string {
 	return oe.Token.Literal
 }
+
 func (oe *InfixExpression) String() string {
 	var out bytes.Buffer
 
@@ -148,7 +149,7 @@ type ReturnStatement struct {
 
 func (rs *ReturnStatement) String () string {
 	var out bytes.Buffer
-	out.WriteString(rs.TokenLiteral() + "")
+	out.WriteString(rs.TokenLiteral() + " ")
 	if rs.ReturnValue != nil {
 		out.WriteString(rs.ReturnValue.String())
 	}
