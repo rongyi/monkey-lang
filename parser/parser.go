@@ -86,6 +86,7 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerPrefix(token.FALSE, p.parserBoolean)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
+	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
 
 	p.infixParseFns = make(map[token.TokenType]infixParseFn)
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
@@ -372,7 +373,7 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 		Token: p.curToken,
 		Value: p.curToken.Literal,
 	}
-	identifiers = append(identifiers)
+	identifiers = append(identifiers, ident)
 
 	for p.peekTokenIs(token.COMMA) {
 		// pass ,
