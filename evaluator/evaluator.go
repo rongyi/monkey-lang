@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	NULL = &object.Null{}
-	TRUE = &object.Boolean{Value: true}
+	NULL  = &object.Null{}
+	TRUE  = &object.Boolean{Value: true}
 	FALSE = &object.Boolean{Value: false}
 )
 
@@ -17,15 +17,16 @@ func Eval(node ast.Node) object.Object {
 		return evalStatements(node.Statements)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
+	// Statement ==> ExpressionStatement ==> IntegerLiteral
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+	// Statement ==> ExpressionStatement ==> Boolean
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
 	}
 
 	return nil
 }
-
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {
@@ -41,5 +42,5 @@ func evalStatements(stmts []ast.Statement) object.Object {
 		ret = Eval(curStmt)
 	}
 
-	return ret;
+	return ret
 }
