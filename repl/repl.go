@@ -11,6 +11,18 @@ import (
 
 // PROMPT is the prompt of the shell
 const PROMPT = "λ>> "
+const MONKEY_FACE = `            __,__
+   .--.  .-"     "-.  .--.
+  / .. \/  .-. .-.  \/ .. \
+ | |  '|  /   Y   \  |'  | |
+ | \   \  \ 0 | 0 /  /   / |
+  \ '- ,\.-"""""""-./, -' /
+   ''-' /_   ^ ^   _\ '-''
+       |  \._   _./  |
+       \   \ '~' /   /
+        '._ '-=-' _.'
+           '-----'
+`
 
 // Start start a repl
 func Start(in io.Reader, out io.Writer) {
@@ -43,6 +55,9 @@ func Start(in io.Reader, out io.Writer) {
 }
 
 func printParseError(out io.Writer, errors []string) {
+	io.WriteString(out, MONKEY_FACE)
+	io.WriteString(out, "Woops! We ran int some monkey business here!\n")
+	io.WriteString(out, " parser errors: \n")
 	for _, msg := range errors {
 		io.WriteString(out, "\t" + msg + "\n")
 	}
