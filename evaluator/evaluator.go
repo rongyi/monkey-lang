@@ -3,6 +3,7 @@ package evaluator
 import (
 	"monkey/ast"
 	"monkey/object"
+	"fmt"
 )
 
 var (
@@ -17,19 +18,21 @@ func Eval(node ast.Node) object.Object {
 		return evalStatements(node.Statements)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
-	case *ast.PrefixExpression:
-		right := Eval(node.Right)
-		return evalPrefixExpression(node.Operator, right)
-	case *ast.InfixExpression:
-		left := Eval(node.Left)
-		right := Eval(node.Right)
-		return evalInfixExpression(node.Operator, left, right)
 	// Statement ==> ExpressionStatement ==> IntegerLiteral
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
 	// Statement ==> ExpressionStatement ==> Boolean
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
+	case *ast.PrefixExpression:
+		right := Eval(node.Right)
+		return evalPrefixExpression(node.Operator, right)
+	case *ast.InfixExpression:
+		fmt.Println("infix calculation")
+		fmt.Println(node.String())
+		left := Eval(node.Left)
+		right := Eval(node.Right)
+		return evalInfixExpression(node.Operator, left, right)
 	}
 
 	return nil
@@ -97,7 +100,7 @@ func evalInfixExpression(op string, left, right object.Object) object.Object {
 
 func evalIntegerInfixExpression(op string, left, right object.Object) object.Object {
 	leftVal := left.(*object.Integer).Value
-	rightVal := left.(*object.Integer).Value
+	rightVal := right.(*object.Integer).Value
 	switch op {
 	case "+":
 		return &object.Integer{Value: leftVal + rightVal}
