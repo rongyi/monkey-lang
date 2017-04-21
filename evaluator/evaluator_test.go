@@ -5,7 +5,7 @@ import (
 	"monkey/object"
 	"monkey/parser"
 	"testing"
-	"fmt"
+	// "fmt"
 )
 
 func TestEvalIntegerExpression(t *testing.T) {
@@ -39,7 +39,7 @@ func testEval(input string) object.Object {
 	l := lexer.New(input)
 	p := parser.New(l)
 	prog := p.ParseProgram()
-	fmt.Println(prog.String())
+	// fmt.Println(prog.String())
 
 	return Eval(prog)
 }
@@ -158,23 +158,23 @@ func TestReturnStatements(t *testing.T) {
 		input    string
 		expected int64
 	}{
-		{"return 10;", 10},
+		// {"return 10;", 10},
 		// {"return 10; 9;", 10},
 		// {"return 2 * 5; 9;", 10},
 		// {"9; return 2 * 5; 9;", 10},
-// 		{"if (10 > 1) { return 10; }", 10},
-// 		{
-// 			`
-// if (10 > 1) {
-//   if (10 > 1) {
-//     return 10;
-//   }
+		// {"if (10 > 1) { return 10; }", 10},
+		{
+			`
+if (10 > 1) {
+  if (10 > 1) {
+    return 10;
+  }
 
-//   return 1;
-// }
-// `,
-// 			10,
-// 		},
+  return 1;
+}
+`,
+			10,
+		},
 // 		{
 // 			`
 // let f = fn(x) {
