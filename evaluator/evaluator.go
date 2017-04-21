@@ -20,6 +20,10 @@ func Eval(node ast.Node) object.Object {
 		return evalStatements(node.Statements)
 	case *ast.ExpressionStatement:
 		return Eval(node.Expression)
+	case *ast.ReturnStatement:
+		// fmt.Println("return exec")
+		val := Eval(node.ReturnValue)
+		return &object.ReturnValue{Value: val}
 	// Statement ==> ExpressionStatement ==> IntegerLiteral
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
@@ -56,6 +60,9 @@ func evalStatements(stmts []ast.Statement) object.Object {
 
 	for _, curStmt := range stmts {
 		ret = Eval(curStmt)
+		if rv, ok := ret.(*object.ReturnValue); ok {
+			return rv.Value
+		}
 	}
 
 	return ret
