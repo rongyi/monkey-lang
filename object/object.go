@@ -1,14 +1,15 @@
 package object
+
 import (
 	"fmt"
 )
 
 const (
-	INTEGER_OBJ = "INTEGER"
-	BOOLEAN_OBJ = "BOOLEAN"
-	NULL_OBJ = "NIL"
+	INTEGER_OBJ      = "INTEGER"
+	BOOLEAN_OBJ      = "BOOLEAN"
+	NULL_OBJ         = "NIL"
 	RETURN_VALUE_OBJ = "RETURN_VALUE"
-	ERROR_OBJ = "ERROR"
+	ERROR_OBJ        = "ERROR"
 )
 
 type ObjectType string
@@ -26,7 +27,7 @@ func (i *Integer) Inspect() string {
 	return fmt.Sprintf("%d", i.Value)
 }
 
-func (i *Integer) Type() ObjectType{
+func (i *Integer) Type() ObjectType {
 	return INTEGER_OBJ
 }
 
@@ -43,7 +44,6 @@ func (b *Boolean) Inspect() string {
 }
 
 type Null struct {
-
 }
 
 func (n *Null) Type() ObjectType {
@@ -76,4 +76,23 @@ func (e *Error) Type() ObjectType {
 
 func (e *Error) Inspect() string {
 	return "ERROR: " + e.Message
+}
+
+type Environment struct {
+	store map[string]Object
+}
+
+func NewEnvironment() *Environment {
+	s := make(map[string]Object)
+	return &Environment{store: s}
+}
+
+func (e *Environment) Get(name string) (Object, bool) {
+	obj, ok := e.store[name]
+	return obj, ok
+}
+
+func (e *Environment) Set(name string, val Object) Object {
+	e.store[name] = val
+	return val
 }
