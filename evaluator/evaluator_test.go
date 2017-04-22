@@ -318,3 +318,32 @@ func TestFunctionApplication(t *testing.T) {
 		testIntegerObject(t, testEval(tt.input), tt.expected)
 	}
 }
+
+func TestEnclosingEnvironments(t *testing.T) {
+	input := `
+let first = 10;
+let second = 10;
+let third = 10;
+
+let ourFunction = fn(first) {
+  let second = 20;
+
+  first + second + third;
+};
+
+ourFunction(20) + first + second;`
+
+	testIntegerObject(t, testEval(input), 70)
+}
+
+func TestClosure(t *testing.T) {
+	input := `
+let mkAdder = fn(x) {
+   fn(y) {
+    return x + y;
+}
+}
+let addTwo = mkAdder(2);
+addTwo(3)`
+	testIntegerObject(t, testEval(input), 5)
+}
