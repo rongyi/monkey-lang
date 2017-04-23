@@ -1,0 +1,8 @@
+* about
+  用golang最为host language去写一个脚本语言。支持：
+  + string
+  + integer
+  + first class function/lambda
+  + closure
+* 主要模块
+  + token/parser/evaluator
