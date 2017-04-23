@@ -36,6 +36,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 	// Statement ==> ExpressionStatement ==> IntegerLiteral
 	case *ast.IntegerLiteral:
 		return &object.Integer{Value: node.Value}
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 	// Statement ==> ExpressionStatement ==> Boolean
 	case *ast.Boolean:
 		return nativeBoolToBooleanObject(node.Value)
