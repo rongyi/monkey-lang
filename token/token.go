@@ -25,6 +25,8 @@ const (
 	RBRACE = "}"
 	LPAREN = "("
 	RPAREN = ")"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	// operator
 	PLUS = "+"
