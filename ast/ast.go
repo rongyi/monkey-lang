@@ -342,3 +342,27 @@ func (al *ArrayLiteral) String() string {
 
 	return out.String()
 }
+
+type IdenxExpression struct {
+	Token token.Token
+	Left  Expression
+	Index Expression
+}
+
+func (ie *IdenxExpression) expressionNode() {}
+
+func (ie *IdenxExpression) TokenLiteral() string {
+	return ie.Token.Literal
+}
+
+func (ie *IdenxExpression) String() string {
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString("[")
+	out.WriteString(ie.Index.String())
+	out.WriteString("])")
+
+	return out.String()
+}
