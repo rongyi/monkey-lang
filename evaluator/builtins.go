@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"monkey/object"
 	"fmt"
+	"monkey/object"
 )
 
 var builtins = map[string]*object.Builtin{
