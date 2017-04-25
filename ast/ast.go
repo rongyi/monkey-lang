@@ -343,19 +343,19 @@ func (al *ArrayLiteral) String() string {
 	return out.String()
 }
 
-type IdenxExpression struct {
+type IndexExpression struct {
 	Token token.Token
 	Left  Expression
 	Index Expression
 }
 
-func (ie *IdenxExpression) expressionNode() {}
+func (ie *IndexExpression) expressionNode() {}
 
-func (ie *IdenxExpression) TokenLiteral() string {
+func (ie *IndexExpression) TokenLiteral() string {
 	return ie.Token.Literal
 }
 
-func (ie *IdenxExpression) String() string {
+func (ie *IndexExpression) String() string {
 	var out bytes.Buffer
 
 	out.WriteString("(")

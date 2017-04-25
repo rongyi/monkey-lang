@@ -894,7 +894,7 @@ func TestParsingIndexExpression(t *testing.T) {
 	checkParseError(t, p)
 
 	stmt := program.Statements[0].(*ast.ExpressionStatement)
-	indexExp, ok := stmt.Expression.(*ast.IdenxExpression)
+	indexExp, ok := stmt.Expression.(*ast.IndexExpression)
 	if !ok {
 		t.Fatalf("exp not *ast.IdenxExpression. got=%T", stmt.Expression)
 	}

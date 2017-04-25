@@ -481,7 +481,7 @@ func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
 }
 
 func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
-	exp := &ast.IdenxExpression{
+	exp := &ast.IndexExpression{
 		Token: p.curToken,
 		Left:  left,
 	}
