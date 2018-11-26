@@ -1,6 +1,7 @@
 package code
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 )
@@ -17,6 +18,7 @@ const (
 	OpConstant OpCode = iota
 )
 
+// Definition 其实主要用于取操作数
 type Definition struct {
 	Name string
 	// 1. len(OperandWidth) ==> operand count
@@ -24,6 +26,7 @@ type Definition struct {
 	OperandWidth []int
 }
 
+// 指令对应的操作数信息
 var definitions = map[OpCode]*Definition{
 	OpConstant: &Definition{
 		Name:         "OpConstant",
@@ -52,6 +55,7 @@ func Make(op OpCode, operands ...int) []byte {
 	}
 
 	instruction := make([]byte, instructionLen)
+	// operator
 	instruction[0] = byte(op)
 	offset := 1
 	for i, o := range operands {
@@ -64,4 +68,52 @@ func Make(op OpCode, operands ...int) []byte {
 		offset += width
 	}
 	return instruction
+}
+
+func (ins Instructions) String() string {
+	var out bytes.Buffer
+	i := 0
+	for i < len(ins) {
+		def, err := Lookup(ins[i])
+		if err != nil {
+			fmt.Fprintf(&out, "ERROR: %s\n", err)
+			continue
+		}
+		// jump the first operator
+		operands, read := ReadOperands(def, ins[i+1:])
+		fmt.Fprintf(&out, "%04d %s", i, ins.fmtInstruction(def, operands))
+		// also count the operator
+		i += 1 + read
+	}
+	return out.String()
+}
+
+func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
+	operandCount := len(def.OperandWidth)
+	if len(operands) != operandCount {
+		return fmt.Sprintf("ERROR: operand len %d does not match defined %d\n", len(operands), operandCount)
+	}
+	switch operandCount {
+	case 1:
+		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	}
+	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
+}
+
+// ReadOperands read all operands，注意ins已经把对应的前面操作符略过了(+1了)
+func ReadOperands(def *Definition, ins Instructions) ([]int, int) {
+	operands := make([]int, len(def.OperandWidth))
+	offset := 0
+	for i, width := range def.OperandWidth {
+		switch width {
+		case 2:
+			operands[i] = int(ReadUint16(ins[offset:]))
+		}
+		offset += width
+	}
+	return operands, offset
+}
+
+func ReadUint16(ins Instructions) uint16 {
+	return binary.BigEndian.Uint16(ins)
 }
