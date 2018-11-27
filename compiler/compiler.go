@@ -45,20 +45,28 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 	case *ast.IntegerLiteral:
 		integer := &object.Integer{Value: node.Value}
+		c.emit(code.OpConstant, c.addConstant(integer))
 	}
 
 	return nil
 }
 
-
 func (c *Compiler) emit(op code.OpCode, operands ...int) int {
-	ins := code
+	ins := code.Make(op, operands...)
+	pos := c.addInstruction(ins)
+	return pos
 }
 
 func (c *Compiler) addConstant(obj object.Object) int {
 	c.constants = append(c.constants, obj)
 	// return the last index
 	return len(c.constants) - 1
+}
+
+func (c *Compiler) addInstruction(ins []byte) int {
+	posNewInstruction := len(c.instructions)
+	c.instructions = append(c.instructions, ins...)
+	return posNewInstruction
 }
 
 // 目前就俩快，命令的字节码，以及编译时候的constant放在一个pood里
