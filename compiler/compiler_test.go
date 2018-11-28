@@ -23,6 +23,7 @@ func TestIntegerArithmetic(t *testing.T) {
 				// OpConstant 后面的操作数代表是pool中的索引
 				code.Make(code.OpConstant, 0),
 				code.Make(code.OpConstant, 1),
+				code.Make(code.OpAdd),
 			},
 		},
 	}

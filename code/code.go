@@ -16,6 +16,7 @@ type OpCode byte
 
 const (
 	OpConstant OpCode = iota
+	OpAdd
 )
 
 // Definition 其实主要用于取操作数
@@ -31,6 +32,10 @@ var definitions = map[OpCode]*Definition{
 	OpConstant: &Definition{
 		Name:         "OpConstant",
 		OperandWidth: []int{2},
+	},
+	OpAdd: &Definition{
+		Name:         "OpAdd",
+		OperandWidth: []int{},
 	},
 }
 
@@ -94,6 +99,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return fmt.Sprintf("ERROR: operand len %d does not match defined %d\n", len(operands), operandCount)
 	}
 	switch operandCount {
+	case 0:
+		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
 	}
