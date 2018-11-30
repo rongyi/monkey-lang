@@ -48,7 +48,7 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 		if err != nil {
 			t.Fatalf("vm error: %s", err)
 		}
-		stackElem := vm.StackTop()
+		stackElem := vm.LastPoppedStackElem()
 
 		testExpectedObject(t, tt.expectd, stackElem)
 	}
@@ -72,6 +72,7 @@ func TestIntegerArithmetic(t *testing.T) {
 		{"2", 2},
 		// only push this value to stack, not working
 		{"1 + 2", 3},
+		{"1 - 2", -1},
 	}
 
 	runVmTests(t, tests)

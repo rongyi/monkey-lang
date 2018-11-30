@@ -17,6 +17,8 @@ type OpCode byte
 const (
 	OpConstant OpCode = iota
 	OpAdd
+	OpMinus
+	OpPop
 )
 
 // Definition 其实主要用于取操作数
@@ -35,6 +37,14 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpAdd: &Definition{
 		Name:         "OpAdd",
+		OperandWidth: []int{},
+	},
+	OpMinus: &Definition{
+		Name:         "OpMinus",
+		OperandWidth: []int{},
+	},
+	OpPop: &Definition{
+		Name:         "OpPop",
 		OperandWidth: []int{},
 	},
 }
