@@ -21,6 +21,8 @@ const (
 	OpMul
 	OpDiv
 	OpPop
+	OpTrue
+	OpFalse
 )
 
 // Definition 其实主要用于取操作数
@@ -55,6 +57,14 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpPop: &Definition{
 		Name:         "OpPop",
+		OperandWidth: []int{},
+	},
+	OpTrue: &Definition{
+		Name:         "OpTrue",
+		OperandWidth: []int{},
+	},
+	OpFalse: &Definition{
+		Name:         "OpFalse",
 		OperandWidth: []int{},
 	},
 }
