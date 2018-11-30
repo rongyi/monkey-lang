@@ -39,6 +39,42 @@ func TestIntegerArithmetic(t *testing.T) {
 				code.Make(code.OpPop),
 			},
 		},
+		{
+			input:             "1 - 2",
+			expectedConstants: []interface{}{1, 2},
+			// 放的是多条指令
+			expectedInstructions: []code.Instructions{
+				// OpConstant 后面的操作数代表是pool中的索引
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpSub),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:             "2 * 3",
+			expectedConstants: []interface{}{2, 3},
+			// 放的是多条指令
+			expectedInstructions: []code.Instructions{
+				// OpConstant 后面的操作数代表是pool中的索引
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpMul),
+				code.Make(code.OpPop),
+			},
+		},
+		{
+			input:             "3 / 3",
+			expectedConstants: []interface{}{3, 3},
+			// 放的是多条指令
+			expectedInstructions: []code.Instructions{
+				// OpConstant 后面的操作数代表是pool中的索引
+				code.Make(code.OpConstant, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpDiv),
+				code.Make(code.OpPop),
+			},
+		},
 	}
 
 	runCompilerTests(t, tests)

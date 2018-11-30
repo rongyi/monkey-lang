@@ -17,7 +17,9 @@ type OpCode byte
 const (
 	OpConstant OpCode = iota
 	OpAdd
-	OpMinus
+	OpSub
+	OpMul
+	OpDiv
 	OpPop
 )
 
@@ -39,8 +41,16 @@ var definitions = map[OpCode]*Definition{
 		Name:         "OpAdd",
 		OperandWidth: []int{},
 	},
-	OpMinus: &Definition{
-		Name:         "OpMinus",
+	OpSub: &Definition{
+		Name:         "OpSub",
+		OperandWidth: []int{},
+	},
+	OpMul: &Definition{
+		Name:         "OpMul",
+		OperandWidth: []int{},
+	},
+	OpDiv: &Definition{
+		Name:         "OpDiv",
 		OperandWidth: []int{},
 	},
 	OpPop: &Definition{
