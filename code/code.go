@@ -23,6 +23,9 @@ const (
 	OpPop
 	OpTrue
 	OpFalse
+	OpEqual
+	OpNotEqual
+	OpGreaterThan
 )
 
 // Definition 其实主要用于取操作数
@@ -65,6 +68,19 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpFalse: &Definition{
 		Name:         "OpFalse",
+		OperandWidth: []int{},
+	},
+
+	OpEqual: &Definition{
+		Name:         "OpEqual",
+		OperandWidth: []int{},
+	},
+	OpNotEqual: &Definition{
+		Name:         "OpNotEqual",
+		OperandWidth: []int{},
+	},
+	OpGreaterThan: &Definition{
+		Name:         "OpGreaterThan",
 		OperandWidth: []int{},
 	},
 }
