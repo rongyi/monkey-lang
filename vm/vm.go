@@ -45,6 +45,7 @@ func (vm *VM) StackTop() object.Object {
 }
 
 func (vm *VM) pop() object.Object {
+	// TODO: make it more safe
 	o := vm.stack[vm.sp-1]
 	vm.sp--
 
@@ -85,9 +86,42 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpBang:
+			err := vm.executeBangOperator()
+			if err != nil {
+				return err
+			}
+		case code.OpMinus:
+			err := vm.executeMinuxOperator()
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+func (vm *VM) executeMinuxOperator() error {
+	operand := vm.pop()
+	if operand.Type() != object.INTEGER_OBJ {
+		return fmt.Errorf("unsupported type for negation: %s", operand.Type())
+	}
+	value := operand.(*object.Integer).Value
+
+	return vm.push(&object.Integer{Value: -value})
+}
+
+func (vm *VM) executeBangOperator() error {
+	operand := vm.pop()
+	switch operand {
+	case True:
+		return vm.push(False)
+	case False:
+		return vm.push(True)
+	// TODO: make it more like lisp, not just default to false
+	default:
+		return vm.push(False)
+	}
 }
 
 func (vm *VM) executeComparison(op code.OpCode) error {
@@ -122,7 +156,6 @@ func (vm *VM) executeIntegerComparison(op code.OpCode, left, right object.Object
 		return fmt.Errorf("unknown operator: %d", op)
 	}
 }
-
 
 func nativeBoolToBooleanObject(input bool) *object.Boolean {
 	if input {

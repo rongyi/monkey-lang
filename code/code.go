@@ -16,16 +16,22 @@ type OpCode byte
 
 const (
 	OpConstant OpCode = iota
+
 	OpAdd
 	OpSub
 	OpMul
 	OpDiv
+
 	OpPop
+
 	OpTrue
 	OpFalse
 	OpEqual
 	OpNotEqual
 	OpGreaterThan
+
+	OpMinus
+	OpBang
 )
 
 // Definition 其实主要用于取操作数
@@ -81,6 +87,15 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpGreaterThan: &Definition{
 		Name:         "OpGreaterThan",
+		OperandWidth: []int{},
+	},
+
+	OpMinus: &Definition{
+		Name:         "OpMinus",
+		OperandWidth: []int{},
+	},
+	OpBang: &Definition{
+		Name:         "OpBang",
 		OperandWidth: []int{},
 	},
 }
