@@ -32,6 +32,15 @@ type EmittedInstruction struct {
 	Position int
 }
 
+func NewWithState(s *SymbolTable, constants []object.Object) *Compiler {
+	ret := New()
+
+	ret.symbolTable = s
+	ret.constants = constants
+
+	return ret
+}
+
 func New() *Compiler {
 	return &Compiler{
 		instructions:        code.Instructions{},
