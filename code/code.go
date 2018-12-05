@@ -35,6 +35,8 @@ const (
 
 	OpJumpNotTruthy
 	OpJump
+
+	OpNull
 )
 
 // Definition 其实主要用于取操作数
@@ -108,6 +110,10 @@ var definitions = map[OpCode]*Definition{
 	OpJump: &Definition{
 		Name:         "OpJump",
 		OperandWidth: []int{2},
+	},
+	OpNull: &Definition{
+		Name:         "OpNull",
+		OperandWidth: []int{},
 	},
 }
 

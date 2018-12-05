@@ -17,6 +17,8 @@ var (
 	True = &object.Boolean{Value: true}
 	// False is the global false object
 	False = &object.Boolean{Value: false}
+	// Null is nil
+	Null = &object.Null{}
 )
 
 type VM struct {
@@ -96,9 +98,40 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpJump:
+			pos := int(code.ReadUint16(vm.instructions[pc+1:]))
+			// 因为for循环里的pc++
+			pc = pos - 1
+		case code.OpJumpNotTruthy:
+			pos := int(code.ReadUint16(vm.instructions[pc+1:]))
+			// 这个指令长度是3，其实应该是加3，循环里会加1，所以这里少加一个
+			pc += 2
+			// 这里弹出if条件里的那个值
+			condition := vm.pop()
+			// not truth 就跳呀
+			if !isTruthy(condition) {
+				// 减1和上面OpJump少1一个意思
+				pc = pos - 1
+			}
+		case code.OpNull:
+			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+func isTruthy(obj object.Object) bool {
+	switch obj := obj.(type) {
+	case *object.Boolean:
+		return obj.Value
+	case *object.Null:
+		return false
+	default:
+		return true
+	}
 }
 
 func (vm *VM) executeMinuxOperator() error {
@@ -118,7 +151,8 @@ func (vm *VM) executeBangOperator() error {
 		return vm.push(False)
 	case False:
 		return vm.push(True)
-	// TODO: make it more like lisp, not just default to false
+	case Null:
+		return vm.push(True)
 	default:
 		return vm.push(False)
 	}
