@@ -37,6 +37,9 @@ const (
 	OpJump
 
 	OpNull
+
+	OpGetGlobal
+	OpSetGlobal
 )
 
 // Definition 其实主要用于取操作数
@@ -114,6 +117,14 @@ var definitions = map[OpCode]*Definition{
 	OpNull: &Definition{
 		Name:         "OpNull",
 		OperandWidth: []int{},
+	},
+	OpSetGlobal: &Definition{
+		Name:         "OpSetGlobal",
+		OperandWidth: []int{2},
+	},
+	OpGetGlobal: &Definition{
+		Name:         "OpGetGlobal",
+		OperandWidth: []int{2},
 	},
 }
 
