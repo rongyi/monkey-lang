@@ -9,6 +9,11 @@ import (
 	"monkey/parser"
 )
 
+const (
+	// Magic for jump postion, it's value is whatever you want
+	Magic = 0xc0fe
+)
+
 type Compiler struct {
 	instructions        code.Instructions
 	constants           []object.Object
@@ -109,23 +114,32 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 	// if statement
 	case *ast.IfExpression:
+		// overview:
+		// 1.jumpWhenNotTrue / 2.consequence / 3.jump /  4.alternate || null /
 		err := c.Compile(node.Condition)
 		if err != nil {
 			return err
 		}
-		jumpNotTruthyPos := c.emit(code.OpJumpNotTruthy, 9999)
+		// section 1: jumpWhenNotTrue
+		jumpNotTruthyPos := c.emit(code.OpJumpNotTruthy, Magic)
+
+		// section 2: consequence
 		err = c.Compile(node.Consequence)
 		if err != nil {
 			return err
 		}
+		// dedup pop
 		if c.lastInstructionIsPop() {
 			c.removeLastPop()
 		}
-		jumpPos := c.emit(code.OpJump, 9999)
+		// consequence end
+		// section 3: jump
+		jumpPos := c.emit(code.OpJump, Magic)
 
 		afterConsequencePos := len(c.instructions)
 		c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
 
+		// section 4: alternate
 		if node.Alternative == nil {
 			c.emit(code.OpNull)
 		} else { // else part
