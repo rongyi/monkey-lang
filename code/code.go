@@ -32,6 +32,9 @@ const (
 
 	OpMinus
 	OpBang
+
+	OpJumpNotTruthy
+	OpJump
 )
 
 // Definition 其实主要用于取操作数
@@ -97,6 +100,14 @@ var definitions = map[OpCode]*Definition{
 	OpBang: &Definition{
 		Name:         "OpBang",
 		OperandWidth: []int{},
+	},
+	OpJumpNotTruthy: &Definition{
+		Name:         "OpJumpNotTruthy",
+		OperandWidth: []int{2},
+	},
+	OpJump: &Definition{
+		Name:         "OpJump",
+		OperandWidth: []int{2},
 	},
 }
 
