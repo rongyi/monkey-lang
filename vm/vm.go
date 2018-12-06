@@ -139,9 +139,34 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpArray:
+			numsElements := int(code.ReadUint16(vm.instructions[pc+1:]))
+			pc += 2
+			array := vm.buildArray(vm.sp-numsElements, vm.sp)
+			vm.sp = vm.sp - numsElements
+
+			err := vm.push(array)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
+}
+
+// buildArray build array, [startIndex, endIndex)
+func (vm *VM) buildArray(startIndex, endIndex int) object.Object {
+	elements := make([]object.Object, endIndex-startIndex)
+
+	// 从小于这里可以看出 endIndex 是不包含进来的，这个 vm的sp总是指向下一个可用的地方一致
+	// 注意这个细节
+	for i := startIndex; i < endIndex; i++ {
+		elements[i-startIndex] = vm.stack[i]
+	}
+
+	return &object.Array{
+		Elements: elements,
+	}
 }
 
 func isTruthy(obj object.Object) bool {
