@@ -42,6 +42,7 @@ const (
 	OpSetGlobal
 
 	OpArray
+	OpHash
 )
 
 // Definition 其实主要用于取操作数
@@ -130,6 +131,10 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpArray: &Definition{
 		Name:         "OpArray",
+		OperandWidth: []int{2},
+	},
+	OpHash: &Definition{
+		Name:         "OpHash",
 		OperandWidth: []int{2},
 	},
 }
