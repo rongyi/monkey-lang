@@ -103,7 +103,7 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-		case code.OpMinus:
+		case code.OpPrefixMinus:
 			err := vm.executeMinuxOperator()
 			if err != nil {
 				return err

@@ -30,7 +30,7 @@ const (
 	OpNotEqual
 	OpGreaterThan
 
-	OpMinus
+	OpPrefixMinus
 	OpBang
 
 	OpJumpNotTruthy
@@ -40,6 +40,8 @@ const (
 
 	OpGetGlobal
 	OpSetGlobal
+
+	OpArray
 )
 
 // Definition 其实主要用于取操作数
@@ -98,8 +100,8 @@ var definitions = map[OpCode]*Definition{
 		OperandWidth: []int{},
 	},
 
-	OpMinus: &Definition{
-		Name:         "OpMinus",
+	OpPrefixMinus: &Definition{
+		Name:         "OpPrefixMinus",
 		OperandWidth: []int{},
 	},
 	OpBang: &Definition{
@@ -124,6 +126,10 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpGetGlobal: &Definition{
 		Name:         "OpGetGlobal",
+		OperandWidth: []int{2},
+	},
+	OpArray: &Definition{
+		Name:         "OpArray",
 		OperandWidth: []int{2},
 	},
 }
