@@ -46,6 +46,10 @@ const (
 
 	// OpIndex is index operation for array or hash
 	OpIndex
+
+	OpCall
+	OpReturnValue
+	OpReturn
 )
 
 // Definition 其实主要用于取操作数
@@ -142,6 +146,18 @@ var definitions = map[OpCode]*Definition{
 	},
 	OpIndex: &Definition{
 		Name:         "OpIndex",
+		OperandWidth: []int{},
+	},
+	OpCall: &Definition{
+		Name:         "OpCall",
+		OperandWidth: []int{},
+	},
+	OpReturnValue: &Definition{
+		Name:         "OpReturnValue",
+		OperandWidth: []int{},
+	},
+	OpReturn: &Definition{
+		Name:         "OpReturn",
 		OperandWidth: []int{},
 	},
 }

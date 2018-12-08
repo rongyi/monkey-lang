@@ -2,12 +2,12 @@ package compiler
 
 import (
 	"fmt"
-	"sort"
 	"monkey/ast"
 	"monkey/code"
 	"monkey/lexer"
 	"monkey/object"
 	"monkey/parser"
+	"sort"
 )
 
 const (
@@ -15,17 +15,27 @@ const (
 	Magic = 0xc0fe
 )
 
+type CompilationScope struct {
+	instructions        code.Instructions
+	lastInstruction     EmittedInstruction
+	previousInstruction EmittedInstruction
+}
+
 type Compiler struct {
-	instructions code.Instructions
+	// instructions code.Instructions
 	// save constants
 	constants []object.Object
 
 	// cache last instruction
-	lastInstruction     EmittedInstruction
-	previousInstruction EmittedInstruction
+	// lastInstruction     EmittedInstruction
+	// previousInstruction EmittedInstruction
 
 	// symbolTable
 	symbolTable *SymbolTable
+
+	// scope
+	scopes     []CompilationScope
+	scopeIndex int
 }
 
 type EmittedInstruction struct {
@@ -43,12 +53,20 @@ func NewWithState(s *SymbolTable, constants []object.Object) *Compiler {
 }
 
 func New() *Compiler {
-	return &Compiler{
+	mainScope := CompilationScope{
 		instructions:        code.Instructions{},
-		constants:           []object.Object{},
 		lastInstruction:     EmittedInstruction{},
 		previousInstruction: EmittedInstruction{},
-		symbolTable:         NewSymbolTable(),
+	}
+
+	return &Compiler{
+		// instructions:        code.Instructions{},
+		constants: []object.Object{},
+		// lastInstruction:     EmittedInstruction{},
+		// previousInstruction: EmittedInstruction{},
+		symbolTable: NewSymbolTable(),
+		scopes:      []CompilationScope{mainScope},
+		scopeIndex:  0,
 	}
 }
 
@@ -153,7 +171,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		// section 3: jump
 		jumpPos := c.emit(code.OpJump, Magic)
 
-		afterConsequencePos := len(c.instructions)
+		afterConsequencePos := len(c.currentInstruction())
 		c.changeOperand(jumpNotTruthyPos, afterConsequencePos)
 
 		// section 4: alternate
@@ -169,7 +187,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 		}
 
-		afterAlternativePos := len(c.instructions)
+		afterAlternativePos := len(c.currentInstruction())
 		c.changeOperand(jumpPos, afterAlternativePos)
 	case *ast.BlockStatement:
 		for _, s := range node.Statements {
@@ -207,7 +225,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 		for k := range node.Pairs {
 			keys = append(keys, k)
 		}
-		sort.Slice(keys, func (i, j int) bool {
+		sort.Slice(keys, func(i, j int) bool {
 			return keys[i].String() < keys[j].String()
 		})
 		for _, k := range keys {
@@ -220,7 +238,7 @@ func (c *Compiler) Compile(node ast.Node) error {
 				return err
 			}
 		}
-		c.emit(code.OpHash, len(keys) * 2)
+		c.emit(code.OpHash, len(keys)*2)
 	case *ast.IndexExpression:
 		err := c.Compile(node.Left)
 		if err != nil {
@@ -245,45 +263,47 @@ func (c *Compiler) emit(op code.OpCode, operands ...int) int {
 }
 
 func (c *Compiler) replaceInstructions(pos int, newInstruction []byte) {
+	ins := c.currentInstruction()
+
 	for i := 0; i < len(newInstruction); i++ {
-		c.instructions[pos+i] = newInstruction[i]
+		ins[pos+i] = newInstruction[i]
 	}
 }
 
 func (c *Compiler) changeOperand(opPos int, operand int) {
-	op := code.OpCode(c.instructions[opPos])
+	op := code.OpCode(c.currentInstruction()[opPos])
 	newInstruction := code.Make(op, operand)
 
 	c.replaceInstructions(opPos, newInstruction)
 }
 
 func (c *Compiler) setLastInstruction(op code.OpCode, pos int) {
-	previous := c.lastInstruction
+	previous := c.scopes[c.scopeIndex].lastInstruction
 	last := EmittedInstruction{OpCode: op, Position: pos}
 
-	c.previousInstruction = previous
-	c.lastInstruction = last
+	c.scopes[c.scopeIndex].previousInstruction = previous
+	c.scopes[c.scopeIndex].lastInstruction = last
 }
 
 func (c *Compiler) lastInstructionIsPop() bool {
-	return c.lastInstruction.OpCode == code.OpPop
+	return c.scopes[c.scopeIndex].lastInstruction.OpCode == code.OpPop
 }
 
 func (c *Compiler) removeLastPop() {
-	c.instructions = c.instructions[:c.lastInstruction.Position]
-	c.lastInstruction = c.previousInstruction
+	last := c.scopes[c.scopeIndex].lastInstruction
+	previous := c.scopes[c.scopeIndex].previousInstruction
+
+	old := c.currentInstruction()
+	new := old[:last.Position]
+
+	c.scopes[c.scopeIndex].instructions = new
+	c.scopes[c.scopeIndex].lastInstruction = previous
 }
 
 func (c *Compiler) addConstant(obj object.Object) int {
 	c.constants = append(c.constants, obj)
 	// return the last index
 	return len(c.constants) - 1
-}
-
-func (c *Compiler) addInstruction(ins []byte) int {
-	posNewInstruction := len(c.instructions)
-	c.instructions = append(c.instructions, ins...)
-	return posNewInstruction
 }
 
 // 目前就俩快，命令的字节码，以及编译时候的constant放在一个pood里
@@ -295,7 +315,7 @@ type Bytecode struct {
 
 func (c *Compiler) Bytecode() *Bytecode {
 	return &Bytecode{
-		Instructions: c.instructions,
+		Instructions: c.currentInstruction(),
 		Constants:    c.constants,
 	}
 }
@@ -304,4 +324,36 @@ func parse(input string) *ast.Program {
 	l := lexer.New(input)
 	p := parser.New(l)
 	return p.ParseProgram()
+}
+
+func (c *Compiler) currentInstruction() code.Instructions {
+	return c.scopes[c.scopeIndex].instructions
+}
+
+func (c *Compiler) addInstruction(ins []byte) int {
+	posNewInstruction := len(c.currentInstruction())
+	updatedInstructions := append(c.currentInstruction(), ins...)
+
+	c.scopes[c.scopeIndex].instructions = updatedInstructions
+
+	return posNewInstruction
+}
+
+func (c *Compiler) enterScope() {
+	scope := CompilationScope{
+		instructions:        code.Instructions{},
+		lastInstruction:     EmittedInstruction{},
+		previousInstruction: EmittedInstruction{},
+	}
+	c.scopes = append(c.scopes, scope)
+	c.scopeIndex++
+}
+
+func (c *Compiler) leaveScope() code.Instructions {
+	instructions := c.currentInstruction()
+
+	c.scopes = c.scopes[:len(c.scopes)-1]
+	c.scopeIndex--
+
+	return instructions
 }
