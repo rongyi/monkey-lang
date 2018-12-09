@@ -249,9 +249,9 @@ type Hashable interface {
 	HashKey() HashKey
 }
 
-
 type CompiledFunction struct {
 	Instructions code.Instructions
+	NumLocals    int
 }
 
 var _ Object = &CompiledFunction{}

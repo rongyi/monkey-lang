@@ -62,7 +62,7 @@ func New(bytecode *compiler.Bytecode) *VM {
 	mainFn := &object.CompiledFunction{
 		Instructions: bytecode.Instructions,
 	}
-	mainFrame := NewFrame(mainFn)
+	mainFrame := NewFrame(mainFn, 0)
 
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
@@ -214,24 +214,43 @@ func (vm *VM) Run() error {
 			if !ok {
 				return fmt.Errorf("calling non-function")
 			}
-			frame := NewFrame(fn)
+			frame := NewFrame(fn, vm.sp)
 			vm.pushFrame(frame)
+			vm.sp = frame.basePointer + fn.NumLocals
 		case code.OpReturnValue:
 			returnValue := vm.pop()
-			vm.popFrame()
+			frame := vm.popFrame()
+			// 减一是把这个调用的函数本身也去掉
+			vm.sp = frame.basePointer - 1
 			// pop the function instruction on the stack
-			vm.pop()
+			// vm.pop()
 			// push result
 			err := vm.push(returnValue)
 			if err != nil {
 				return err
 			}
 		case code.OpReturn:
-			vm.popFrame()
+			frame := vm.popFrame()
+			// 减一是把这个被调用的函数本身也去掉
+			vm.sp = frame.basePointer - 1
 			// this function
-			vm.pop()
+			// vm.pop()
 
 			err := vm.push(Null)
+			if err != nil {
+				return err
+			}
+		case code.OpSetLocal:
+			localIndex := code.ReadUint8(ins[pc+1:])
+			vm.currentFrame().pc += 1
+
+			frame := vm.currentFrame()
+			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
+		case code.OpGetLocal:
+			localIndex := code.ReadUint8(ins[pc+1:])
+			vm.currentFrame().pc += 1
+			frame := vm.currentFrame()
+			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
 			if err != nil {
 				return err
 			}
