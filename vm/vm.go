@@ -101,9 +101,7 @@ func (vm *VM) Run() error {
 	var ins code.Instructions
 	var op code.OpCode
 
-	for vm.currentFrame().pc < len(vm.currentFrame().Instructions())-1 {
-		vm.currentFrame().pc++
-
+	for ; vm.currentFrame().pc < len(vm.currentFrame().Instructions()); vm.currentFrame().pc++ {
 		pc = vm.currentFrame().pc
 		ins = vm.currentFrame().Instructions()
 		op = code.OpCode(ins[pc])
