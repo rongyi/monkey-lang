@@ -683,3 +683,85 @@ func TestCompilerScopes(t *testing.T) {
 		t.Errorf("previousInstruction.OpCode wrong. got=%d, want=%d", previous.OpCode, code.OpMul)
 	}
 }
+
+func TestLetStatementScopes(t *testing.T) {
+	tests := []compilerTestCase{
+		{
+			input: `
+let num = 55;
+fn() { num }
+`,
+			expectedConstants: []interface{}{
+				55,
+				[]code.Instructions{
+					code.Make(code.OpGetGlobal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				code.Make(code.OpConstant, 0),
+				// num是全局变量
+				code.Make(code.OpSetGlobal, 0),
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+
+		{
+			input: `
+fn() {
+    let num = 55;
+    num;
+}
+`,
+			expectedConstants: []interface{}{
+				55,
+				[]code.Instructions{
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				// 把函数放上来
+				code.Make(code.OpConstant, 1),
+				code.Make(code.OpPop),
+			},
+		},
+
+		{
+			input: `
+fn() {
+    let a = 55;
+    let b = 77;
+    a + b
+}
+`,
+			expectedConstants: []interface{}{
+				55,
+				77,
+				[]code.Instructions{
+					// put 55 on the stack and set local bind stack.top()
+					code.Make(code.OpConstant, 0),
+					code.Make(code.OpSetLocal, 0),
+					// put 77 on the stack and set local b bind stack.top()
+					code.Make(code.OpConstant, 1),
+					code.Make(code.OpSetLocal, 1),
+
+					// fetch two local binding
+					code.Make(code.OpGetLocal, 0),
+					code.Make(code.OpGetLocal, 1),
+					code.Make(code.OpAdd),
+					code.Make(code.OpReturnValue),
+				},
+			},
+			expectedInstructions: []code.Instructions{
+				// 函数放上来
+				code.Make(code.OpConstant, 2),
+				code.Make(code.OpPop),
+			},
+		},
+	}
+	runCompilerTests(t, tests)
+}
