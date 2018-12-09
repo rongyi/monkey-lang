@@ -210,6 +210,9 @@ func (vm *VM) Run() error {
 				return err
 			}
 		case code.OpCall:
+			// ignore the len(arg) in this instruction
+			vm.currentFrame().pc += 1
+
 			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
 			if !ok {
 				return fmt.Errorf("calling non-function")
