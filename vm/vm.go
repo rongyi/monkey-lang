@@ -101,7 +101,9 @@ func (vm *VM) Run() error {
 	var ins code.Instructions
 	var op code.OpCode
 
-	for ; vm.currentFrame().pc < len(vm.currentFrame().Instructions()); vm.currentFrame().pc++ {
+	for vm.currentFrame().pc < len(vm.currentFrame().Instructions())-1 {
+		vm.currentFrame().pc++
+
 		pc = vm.currentFrame().pc
 		ins = vm.currentFrame().Instructions()
 		op = code.OpCode(ins[pc])
@@ -204,6 +206,23 @@ func (vm *VM) Run() error {
 			index := vm.pop()
 			left := vm.pop()
 			err := vm.executeIndexExpression(left, index)
+			if err != nil {
+				return err
+			}
+		case code.OpCall:
+			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
+			if !ok {
+				return fmt.Errorf("calling non-function")
+			}
+			frame := NewFrame(fn)
+			vm.pushFrame(frame)
+		case code.OpReturnValue:
+			returnValue := vm.pop()
+			vm.popFrame()
+			// pop the function instruction on the stack
+			vm.pop()
+			// push result
+			err := vm.push(returnValue)
 			if err != nil {
 				return err
 			}

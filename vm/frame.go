@@ -13,7 +13,7 @@ type Frame struct {
 func NewFrame(fn *object.CompiledFunction) *Frame {
 	return &Frame{
 		fn: fn,
-		pc: 0,
+		pc: -1,
 	}
 }
 

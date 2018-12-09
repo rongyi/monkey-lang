@@ -28,8 +28,8 @@ func testIntegerObject(expected int64, actual object.Object) error {
 }
 
 type vmTestCase struct {
-	input   string
-	expectd interface{}
+	input    string
+	expected interface{}
 }
 
 func runVmTests(t *testing.T, tests []vmTestCase) {
@@ -50,7 +50,7 @@ func runVmTests(t *testing.T, tests []vmTestCase) {
 		}
 		stackElem := vm.LastPoppedStackElem()
 
-		testExpectedObject(t, tt.expectd, stackElem)
+		testExpectedObject(t, tt.expected, stackElem)
 	}
 }
 
@@ -274,7 +274,6 @@ func TestHashLiterals(t *testing.T) {
 	runVmTests(t, tests)
 }
 
-
 func TestIndexExpression(t *testing.T) {
 	tests := []vmTestCase{
 		{"[1, 2, 3][1]", 2},
@@ -288,5 +287,19 @@ func TestIndexExpression(t *testing.T) {
 		{"{1: 1}[0]", Null},
 		{"{}[0]", Null},
 	}
+	runVmTests(t, tests)
+}
+
+func TestCallingFunctionsWithoutArguments(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+let fivePlusTen = fn() { 5 + 10;};
+fivePlusTen();
+`,
+			expected: 15,
+		},
+	}
+
 	runVmTests(t, tests)
 }
