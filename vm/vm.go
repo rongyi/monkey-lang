@@ -9,8 +9,11 @@ import (
 
 const (
 	// StackSize is the default stack size
-	StackSize  = 2048
+	StackSize = 2048
+	// GlobalSize is global variable array
 	GlobalSize = 65536
+	// MaxFrames is call frame
+	MaxFrames = 1024
 )
 
 var (
@@ -23,12 +26,29 @@ var (
 )
 
 type VM struct {
-	constants    []object.Object
-	instructions code.Instructions
+	constants []object.Object
+	// instructions code.Instructions
 
 	stack   []object.Object
 	sp      int // always point to next available value, top is stack[sp - 1]
 	globals []object.Object
+
+	frames     []*Frame
+	frameIndex int // point to next available
+}
+
+func (vm *VM) currentFrame() *Frame {
+	return vm.frames[vm.frameIndex-1]
+}
+
+func (vm *VM) pushFrame(f *Frame) {
+	vm.frames[vm.frameIndex] = f
+	vm.frameIndex++
+}
+
+func (vm *VM) popFrame() *Frame {
+	vm.frameIndex--
+	return vm.frames[vm.frameIndex]
 }
 
 func NewWithGlobalStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
@@ -39,12 +59,24 @@ func NewWithGlobalStore(bytecode *compiler.Bytecode, s []object.Object) *VM {
 }
 
 func New(bytecode *compiler.Bytecode) *VM {
+	mainFn := &object.CompiledFunction{
+		Instructions: bytecode.Instructions,
+	}
+	mainFrame := NewFrame(mainFn)
+
+	frames := make([]*Frame, MaxFrames)
+	frames[0] = mainFrame
+
 	return &VM{
-		instructions: bytecode.Instructions,
-		constants:    bytecode.Constants,
-		stack:        make([]object.Object, StackSize),
-		sp:           0,
-		globals:      make([]object.Object, GlobalSize),
+		constants: bytecode.Constants,
+
+		stack: make([]object.Object, StackSize),
+		sp:    0,
+
+		globals: make([]object.Object, GlobalSize),
+
+		frames:     frames,
+		frameIndex: 1,
 	}
 }
 
@@ -65,12 +97,20 @@ func (vm *VM) pop() object.Object {
 }
 
 func (vm *VM) Run() error {
-	for pc := 0; pc < len(vm.instructions); pc++ {
-		op := code.OpCode(vm.instructions[pc])
+	var pc int
+	var ins code.Instructions
+	var op code.OpCode
+
+	for vm.currentFrame().pc < len(vm.currentFrame().Instructions())-1 {
+		vm.currentFrame().pc++
+
+		pc = vm.currentFrame().pc
+		ins = vm.currentFrame().Instructions()
+		op = code.OpCode(ins[pc])
 		switch op {
 		case code.OpConstant:
-			constIndex := code.ReadUint16(vm.instructions[pc+1:])
-			pc += 2
+			constIndex := code.ReadUint16(ins[pc+1:])
+			vm.currentFrame().pc += 2
 
 			err := vm.push(vm.constants[constIndex])
 			if err != nil {
@@ -109,19 +149,19 @@ func (vm *VM) Run() error {
 				return err
 			}
 		case code.OpJump:
-			pos := int(code.ReadUint16(vm.instructions[pc+1:]))
+			pos := int(code.ReadUint16(ins[pc+1:]))
 			// 因为for循环里的pc++
-			pc = pos - 1
+			vm.currentFrame().pc = pos - 1
 		case code.OpJumpNotTruthy:
-			pos := int(code.ReadUint16(vm.instructions[pc+1:]))
+			pos := int(code.ReadUint16(ins[pc+1:]))
 			// 这个指令长度是3，其实应该是加3，循环里会加1，所以这里少加一个
-			pc += 2
+			vm.currentFrame().pc += 2
 			// 这里弹出if条件里的那个值
 			condition := vm.pop()
 			// not truth 就跳呀
 			if !isTruthy(condition) {
 				// 减1和上面OpJump少1一个意思
-				pc = pos - 1
+				vm.currentFrame().pc = pos - 1
 			}
 		case code.OpNull:
 			err := vm.push(Null)
@@ -129,19 +169,19 @@ func (vm *VM) Run() error {
 				return err
 			}
 		case code.OpSetGlobal:
-			globalIndex := code.ReadUint16(vm.instructions[pc+1:])
-			pc += 2
+			globalIndex := code.ReadUint16(ins[pc+1:])
+			vm.currentFrame().pc += 2
 			vm.globals[globalIndex] = vm.pop()
 		case code.OpGetGlobal:
-			globalIndex := code.ReadUint16(vm.instructions[pc+1:])
-			pc += 2
+			globalIndex := code.ReadUint16(ins[pc+1:])
+			vm.currentFrame().pc += 2
 			err := vm.push(vm.globals[globalIndex])
 			if err != nil {
 				return err
 			}
 		case code.OpArray:
-			numsElements := int(code.ReadUint16(vm.instructions[pc+1:]))
-			pc += 2
+			numsElements := int(code.ReadUint16(ins[pc+1:]))
+			vm.currentFrame().pc += 2
 			array := vm.buildArray(vm.sp-numsElements, vm.sp)
 			vm.sp = vm.sp - numsElements
 
@@ -150,8 +190,8 @@ func (vm *VM) Run() error {
 				return err
 			}
 		case code.OpHash:
-			numElements := int(code.ReadUint16(vm.instructions[pc+1:]))
-			pc += 2
+			numElements := int(code.ReadUint16(ins[pc+1:]))
+			vm.currentFrame().pc += 2
 
 			hash, err := vm.buildHash(vm.sp-numElements, vm.sp)
 			if err != nil {
@@ -174,7 +214,6 @@ func (vm *VM) Run() error {
 	return nil
 }
 
-
 func (vm *VM) executeIndexExpression(left, index object.Object) error {
 	switch {
 	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
@@ -186,7 +225,6 @@ func (vm *VM) executeIndexExpression(left, index object.Object) error {
 	}
 }
 
-
 func (vm *VM) executeArrayIndex(array, index object.Object) error {
 	arrayObject := array.(*object.Array)
 	i := index.(*object.Integer).Value
@@ -196,7 +234,6 @@ func (vm *VM) executeArrayIndex(array, index object.Object) error {
 	}
 	return vm.push(arrayObject.Elements[i])
 }
-
 
 func (vm *VM) executeHashIndex(hash, index object.Object) error {
 	hashObject := hash.(*object.Hash)

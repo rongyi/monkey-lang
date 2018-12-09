@@ -22,13 +22,8 @@ type CompilationScope struct {
 }
 
 type Compiler struct {
-	// instructions code.Instructions
 	// save constants
 	constants []object.Object
-
-	// cache last instruction
-	// lastInstruction     EmittedInstruction
-	// previousInstruction EmittedInstruction
 
 	// symbolTable
 	symbolTable *SymbolTable
@@ -60,10 +55,7 @@ func New() *Compiler {
 	}
 
 	return &Compiler{
-		// instructions:        code.Instructions{},
-		constants: []object.Object{},
-		// lastInstruction:     EmittedInstruction{},
-		// previousInstruction: EmittedInstruction{},
+		constants:   []object.Object{},
 		symbolTable: NewSymbolTable(),
 		scopes:      []CompilationScope{mainScope},
 		scopeIndex:  0,
@@ -256,8 +248,13 @@ func (c *Compiler) Compile(node ast.Node) error {
 		if err != nil {
 			return err
 		}
+
 		if c.lastInstructionIs(code.OpPop) {
 			c.replaceLastPopWithReturn()
+		}
+
+		if !c.lastInstructionIs(code.OpReturnValue) {
+			c.emit(code.OpReturn)
 		}
 
 		instructions := c.leaveScope()
@@ -273,16 +270,24 @@ func (c *Compiler) Compile(node ast.Node) error {
 			return err
 		}
 		c.emit(code.OpReturnValue)
+	case *ast.CallExpression:
+		err := c.Compile(node.Function)
+		if err != nil {
+			return err
+		}
+		c.emit(code.OpCall)
 	}
 
 	return nil
 }
 
-
 func (c *Compiler) replaceLastPopWithReturn() {
 	lastPos := c.scopes[c.scopeIndex].lastInstruction.Position
 
 	c.replaceInstructions(lastPos, code.Make(code.OpReturnValue))
+
+	// still need to change
+	c.scopes[c.scopeIndex].lastInstruction.OpCode = code.OpReturnValue
 }
 
 func (c *Compiler) emit(op code.OpCode, operands ...int) int {
@@ -315,7 +320,6 @@ func (c *Compiler) setLastInstruction(op code.OpCode, pos int) {
 	c.scopes[c.scopeIndex].previousInstruction = previous
 	c.scopes[c.scopeIndex].lastInstruction = last
 }
-
 
 func (c *Compiler) lastInstructionIs(op code.OpCode) bool {
 	if len(c.currentInstruction()) == 0 {
