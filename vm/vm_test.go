@@ -299,6 +299,61 @@ fivePlusTen();
 `,
 			expected: 15,
 		},
+		{
+			input: `
+let one = fn() { 1; };
+let two = fn() { 2; };
+one() + two()
+`,
+			expected: 3,
+		},
+		{
+			input: `
+let a = fn() { 1 };
+let b = fn() { a() + 1 };
+let c = fn() { b() + 1 };
+c();
+`,
+			expected: 3,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
+func TestCallingFunctionsWithoutReturnValue(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+let noReturn = fn() {};
+noReturn();
+`,
+			expected: Null,
+		},
+		{
+			input: `
+let noReturn = fn() {};
+let noReturnTwo = fn() { noReturn() ;};
+noReturn();
+noReturnTwo();
+`,
+			expected: Null,
+		},
+	}
+
+	runVmTests(t, tests)
+}
+
+func TestFirstClassFunctions(t *testing.T) {
+	tests := []vmTestCase{
+		{
+			input: `
+let returnOne = fn() { return 1; };
+let returnOneReturner = fn() { return returnOne; };
+returnOneReturner()()
+`,
+			expected: 1,
+		},
 	}
 
 	runVmTests(t, tests)
