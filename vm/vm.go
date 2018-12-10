@@ -245,12 +245,14 @@ func (vm *VM) Run() error {
 			}
 		case code.OpSetLocal:
 			localIndex := code.ReadUint8(ins[pc+1:])
+			// 加上操作数长度，然后for循环还会加一
 			vm.currentFrame().pc += 1
 
 			frame := vm.currentFrame()
 			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
 		case code.OpGetLocal:
 			localIndex := code.ReadUint8(ins[pc+1:])
+			// 加上操作数长度，然后for循环还会加一
 			vm.currentFrame().pc += 1
 			frame := vm.currentFrame()
 			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
