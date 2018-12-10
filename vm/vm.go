@@ -210,16 +210,24 @@ func (vm *VM) Run() error {
 				return err
 			}
 		case code.OpCall:
+			numArgs := code.ReadUint8(ins[pc+1:])
 			// ignore the len(arg) in this instruction
 			vm.currentFrame().pc += 1
 
-			fn, ok := vm.stack[vm.sp-1].(*object.CompiledFunction)
-			if !ok {
-				return fmt.Errorf("calling non-function")
+			// fn, ok := vm.stack[vm.sp-1-int(numArgs)].(*object.CompiledFunction)
+			// if !ok {
+			// 	return fmt.Errorf("calling non-function")
+			// }
+			// // 注意这里如果没有函数参数时是对的
+			// // TODO: if there are function args, this need be changed
+			// frame := NewFrame(fn, vm.sp)
+			// vm.pushFrame(frame)
+			// vm.sp = frame.basePointer + fn.NumLocals
+
+			err := vm.callFunction(int(numArgs))
+			if err != nil {
+				return err
 			}
-			frame := NewFrame(fn, vm.sp)
-			vm.pushFrame(frame)
-			vm.sp = frame.basePointer + fn.NumLocals
 		case code.OpReturnValue:
 			returnValue := vm.pop()
 			frame := vm.popFrame()
@@ -249,18 +257,38 @@ func (vm *VM) Run() error {
 			vm.currentFrame().pc += 1
 
 			frame := vm.currentFrame()
+			// 这里不是stack的玩法，是数组的玩法!!
 			vm.stack[frame.basePointer+int(localIndex)] = vm.pop()
 		case code.OpGetLocal:
 			localIndex := code.ReadUint8(ins[pc+1:])
 			// 加上操作数长度，然后for循环还会加一
 			vm.currentFrame().pc += 1
 			frame := vm.currentFrame()
+			// 数组玩法
 			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
 			if err != nil {
 				return err
 			}
 		}
 	}
+	return nil
+}
+
+func (vm *VM) callFunction(numArgs int) error {
+	fn, ok := vm.stack[vm.sp-1-numArgs].(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("calling non-function")
+	}
+	if numArgs != fn.NumParameters {
+		return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, numArgs)
+	}
+
+	frame := NewFrame(fn, vm.sp-numArgs)
+	vm.pushFrame(frame)
+
+	// this hole for local binding
+	vm.sp = frame.basePointer + fn.NumLocals
+
 	return nil
 }
 

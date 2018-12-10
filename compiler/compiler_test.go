@@ -689,6 +689,7 @@ manyArg(24, 25, 26);
 				code.Make(code.OpPop),
 			},
 		},
+		// 测试函数参数绑定
 		{
 			input: `
 let oneArg = fn(a) { a };

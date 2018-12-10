@@ -250,8 +250,9 @@ type Hashable interface {
 }
 
 type CompiledFunction struct {
-	Instructions code.Instructions
-	NumLocals    int
+	Instructions  code.Instructions
+	NumLocals     int
+	NumParameters int			// 形参个数
 }
 
 var _ Object = &CompiledFunction{}
