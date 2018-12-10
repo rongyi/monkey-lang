@@ -38,7 +38,6 @@ func (s *SymbolTable) Define(name string) Symbol {
 	ret := Symbol{
 		Name:  name,
 		Index: s.numDefinitions,
-		Scope: GlobalScope,
 	}
 	if s.Outer == nil {
 		ret.Scope = GlobalScope
