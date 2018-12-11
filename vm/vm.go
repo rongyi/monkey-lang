@@ -275,6 +275,7 @@ func (vm *VM) Run() error {
 }
 
 func (vm *VM) callFunction(numArgs int) error {
+	// sp总是指向下一个可用的地方，所以减一
 	fn, ok := vm.stack[vm.sp-1-numArgs].(*object.CompiledFunction)
 	if !ok {
 		return fmt.Errorf("calling non-function")
