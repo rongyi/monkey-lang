@@ -52,6 +52,8 @@ const (
 	OpCall
 	OpReturnValue
 	OpReturn
+
+	OpGetBuiltin
 )
 
 // Definition 其实主要用于取操作数
@@ -169,6 +171,11 @@ var definitions = map[OpCode]*Definition{
 	OpSetLocal: &Definition{
 		Name: "OpSetLocal",
 		// local变量最多256个哦
+		OperandWidth: []int{1},
+	},
+	OpGetBuiltin: &Definition{
+		Name: "OpGetBuiltin",
+		// 内建函数就那几个
 		OperandWidth: []int{1},
 	},
 }
