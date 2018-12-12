@@ -9,7 +9,7 @@ var Builtins = []struct {
 	Builtin *Builtin
 }{
 	{
-		Name: "len",			// index: 0
+		Name: "len", // index: 0
 		Builtin: &Builtin{
 			Fn: func(args ...Object) Object {
 				if len(args) != 1 {
@@ -27,7 +27,7 @@ var Builtins = []struct {
 		},
 	},
 	{
-		Name: "puts",			// index: 1
+		Name: "puts", // index: 1
 		Builtin: &Builtin{
 			Fn: func(args ...Object) Object {
 				for _, arg := range args {
@@ -39,7 +39,7 @@ var Builtins = []struct {
 	},
 
 	{
-		Name: "first",			// index: 2
+		Name: "first", // index: 2
 		Builtin: &Builtin{
 			Fn: func(args ...Object) Object {
 				if len(args) != 1 {
@@ -58,7 +58,7 @@ var Builtins = []struct {
 	},
 
 	{
-		Name: "last",			// index: 3
+		Name: "last", // index: 3
 		Builtin: &Builtin{
 			Fn: func(args ...Object) Object {
 				if len(args) != 1 {
@@ -78,7 +78,7 @@ var Builtins = []struct {
 	},
 
 	{
-		Name: "rest",			// index: 4
+		Name: "rest", // index: 4
 		Builtin: &Builtin{
 			Fn: func(args ...Object) Object {
 				if len(args) != 1 {
@@ -101,7 +101,7 @@ var Builtins = []struct {
 	},
 
 	{
-		Name: "push",			// index: 5
+		Name: "push", // index: 5
 		Builtin: &Builtin{
 			Fn: func(args ...Object) Object {
 				if len(args) != 2 {
