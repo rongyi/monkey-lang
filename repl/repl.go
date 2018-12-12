@@ -37,6 +37,7 @@ func Start(in io.Reader, out io.Writer) {
 	for i, v := range object.Builtins {
 		symbolTable.DefineBuiltin(i, v.Name)
 	}
+
 	for {
 		fmt.Printf(PROMPT)
 		scanned := scanner.Scan()
