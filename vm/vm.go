@@ -212,7 +212,7 @@ func (vm *VM) Run() error {
 		case code.OpCall:
 			numArgs := code.ReadUint8(ins[pc+1:])
 			// ignore the len(arg) in this instruction
-			vm.currentFrame().pc += 1
+			vm.currentFrame().pc++
 
 			// fn, ok := vm.stack[vm.sp-1-int(numArgs)].(*object.CompiledFunction)
 			// if !ok {
@@ -258,7 +258,7 @@ func (vm *VM) Run() error {
 		case code.OpSetLocal:
 			localIndex := code.ReadUint8(ins[pc+1:])
 			// 加上操作数长度，然后for循环还会加一
-			vm.currentFrame().pc += 1
+			vm.currentFrame().pc++
 
 			frame := vm.currentFrame()
 			// 这里不是stack的玩法，是数组的玩法!!
@@ -266,10 +266,20 @@ func (vm *VM) Run() error {
 		case code.OpGetLocal:
 			localIndex := code.ReadUint8(ins[pc+1:])
 			// 加上操作数长度，然后for循环还会加一
-			vm.currentFrame().pc += 1
+			vm.currentFrame().pc++
 			frame := vm.currentFrame()
 			// 数组玩法
 			err := vm.push(vm.stack[frame.basePointer+int(localIndex)])
+			if err != nil {
+				return err
+			}
+		case code.OpGetBuiltin:
+			builtinIndex := code.ReadUint8(ins[pc+1:])
+
+			vm.currentFrame().pc++
+
+			definition := object.Builtins[builtinIndex]
+			err := vm.push(definition.Builtin)
 			if err != nil {
 				return err
 			}

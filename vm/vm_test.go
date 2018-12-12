@@ -555,7 +555,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{
 			`len(1)`,
 			&object.Error{
-				Message: "argument to `len` not supported, got INTEGER",
+				Message: "argument to `len` not supported, got=INTEGER",
 			},
 		},
 		{
@@ -572,7 +572,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{
 			`first(1)`,
 			&object.Error{
-				Message: "argument to `first` must be ARRAY, got INTEGER",
+				Message: "argument to `first` must be ARRAY, got=INTEGER",
 			},
 		},
 		{`last([1, 2, 3])`, 3},
@@ -580,7 +580,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{
 			`last(1)`,
 			&object.Error{
-				Message: "argument to `last` must be ARRAY, got INTEGER",
+				Message: "argument to `last` must be ARRAY, got=INTEGER",
 			},
 		},
 
@@ -590,7 +590,7 @@ func TestBuiltinFunctions(t *testing.T) {
 		{
 			`push(1, 1)`,
 			&object.Error{
-				Message: "argument to `push` must be ARRAY, got INTEGER",
+				Message: "argument to `push` must be ARRAY, got=INTEGER",
 			},
 		},
 	}
