@@ -224,7 +224,11 @@ func (vm *VM) Run() error {
 			// vm.pushFrame(frame)
 			// vm.sp = frame.basePointer + fn.NumLocals
 
-			err := vm.callFunction(int(numArgs))
+			// err := vm.callFunction(int(numArgs))
+			// if err != nil {
+			// 	return err
+			// }
+			err := vm.executeCall(int(numArgs))
 			if err != nil {
 				return err
 			}
@@ -274,12 +278,39 @@ func (vm *VM) Run() error {
 	return nil
 }
 
-func (vm *VM) callFunction(numArgs int) error {
-	// sp总是指向下一个可用的地方，所以减一
-	fn, ok := vm.stack[vm.sp-1-numArgs].(*object.CompiledFunction)
-	if !ok {
-		return fmt.Errorf("calling non-function")
+func (vm *VM) executeCall(numArgs int) error {
+	callee := vm.stack[vm.sp-1-numArgs]
+	switch callee := callee.(type) {
+	case *object.CompiledFunction:
+		return vm.callFunction(callee, numArgs)
+	case *object.Builtin:
+		return vm.callBuiltin(callee, numArgs)
+	default:
+		return fmt.Errorf("calling non-function and non-built-in")
 	}
+}
+
+func (vm *VM) callBuiltin(builtin *object.Builtin, numArgs int) error {
+	args := vm.stack[vm.sp-numArgs : vm.sp]
+	ret := builtin.Fn(args...)
+
+	vm.sp = vm.sp - numArgs - 1
+
+	if ret != nil {
+		vm.push(ret)
+	} else {
+		vm.push(Null)
+	}
+
+	return nil
+}
+
+func (vm *VM) callFunction(fn *object.CompiledFunction, numArgs int) error {
+	// sp总是指向下一个可用的地方，所以减一
+	// fn, ok := vm.stack[vm.sp-1-numArgs].(*object.CompiledFunction)
+	// if !ok {
+	// 	return fmt.Errorf("calling non-function")
+	// }
 	if numArgs != fn.NumParameters {
 		return fmt.Errorf("wrong number of arguments: want=%d, got=%d", fn.NumParameters, numArgs)
 	}
