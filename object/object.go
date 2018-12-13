@@ -21,6 +21,7 @@ const (
 	ARRAY_OBJ             = "ARRAY"
 	HASH_OBJ              = "HASH"
 	COMPILED_FUNCTION_OBJ = "COMPILED_FUNCTION_OBJ"
+	CLOSURE_OBJ           = "CLOSURE"
 )
 
 type ObjectType string
@@ -252,7 +253,7 @@ type Hashable interface {
 type CompiledFunction struct {
 	Instructions  code.Instructions
 	NumLocals     int
-	NumParameters int			// 形参个数
+	NumParameters int // 形参个数
 }
 
 var _ Object = &CompiledFunction{}
@@ -263,4 +264,19 @@ func (cf *CompiledFunction) Type() ObjectType {
 
 func (cf *CompiledFunction) Inspect() string {
 	return fmt.Sprintf("CompiledFunction[%p]", cf)
+}
+
+type Closure struct {
+	Fn   *CompiledFunction
+	Free []Object
+}
+
+var _ Object = &Closure{}
+
+func (c *Closure) Type() ObjectType {
+	return CLOSURE_OBJ
+}
+
+func (c *Closure) Inspect() string {
+	return fmt.Sprintf("Closure[%p]", c)
 }

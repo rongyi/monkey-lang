@@ -54,6 +54,8 @@ const (
 	OpReturn
 
 	OpGetBuiltin
+
+	OpClosure
 )
 
 // Definition 其实主要用于取操作数
@@ -178,6 +180,10 @@ var definitions = map[OpCode]*Definition{
 		// 内建函数就那几个
 		OperandWidth: []int{1},
 	},
+	OpClosure: &Definition{
+		Name:         "OpClosure",
+		OperandWidth: []int{2, 1},
+	},
 }
 
 func Lookup(op byte) (*Definition, error) {
@@ -246,6 +252,8 @@ func (ins Instructions) fmtInstruction(def *Definition, operands []int) string {
 		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	case 2:
+		return fmt.Sprintf("%s %d %d", def.Name, operands[0], operands[1])
 	}
 	return fmt.Sprintf("ERROR: unhandled operandCount for %s\n", def.Name)
 }
