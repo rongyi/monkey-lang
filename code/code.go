@@ -56,6 +56,7 @@ const (
 	OpGetBuiltin
 
 	OpClosure
+	OpGetFree
 )
 
 // Definition 其实主要用于取操作数
@@ -185,6 +186,10 @@ var definitions = map[OpCode]*Definition{
 		// 1. constant index: real function
 		// 2. free variable count
 		OperandWidth: []int{2, 1},
+	},
+	OpGetFree: &Definition{
+		Name:         "OpGetFree",
+		OperandWidth: []int{1},
 	},
 }
 
