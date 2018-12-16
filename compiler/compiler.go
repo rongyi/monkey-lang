@@ -280,7 +280,10 @@ func (c *Compiler) Compile(node ast.Node) error {
 			NumLocals:     numLocals,
 			NumParameters: len(node.Parameters),
 		}
+		// legacy function without closure
 		// c.emit(code.OpConstant, c.addConstant(compiledFn))
+
+		// still compiled function in this pool, not closure!
 		c.emit(code.OpClosure, c.addConstant(compiledFn), 0)
 
 	case *ast.ReturnStatement:

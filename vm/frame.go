@@ -6,19 +6,20 @@ import (
 )
 
 type Frame struct {
-	fn          *object.CompiledFunction
+	// fn          *object.CompiledFunction
+	cl          *object.Closure
 	pc          int
 	basePointer int
 }
 
-func NewFrame(fn *object.CompiledFunction, basePointer int) *Frame {
+func NewFrame(cl *object.Closure, basePointer int) *Frame {
 	return &Frame{
-		fn:          fn,
+		cl:          cl,
 		pc:          -1,
 		basePointer: basePointer,
 	}
 }
 
 func (f *Frame) Instructions() code.Instructions {
-	return f.fn.Instructions
+	return f.cl.Fn.Instructions
 }
