@@ -980,6 +980,7 @@ fn(a) {
 					code.Make(code.OpAdd),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpAdd),
+
 					code.Make(code.OpReturnValue),
 				},
 				[]code.Instructions{
