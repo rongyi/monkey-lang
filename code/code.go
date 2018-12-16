@@ -181,7 +181,9 @@ var definitions = map[OpCode]*Definition{
 		OperandWidth: []int{1},
 	},
 	OpClosure: &Definition{
-		Name:         "OpClosure",
+		Name: "OpClosure",
+		// 1. constant index: real function
+		// 2. free variable count
 		OperandWidth: []int{2, 1},
 	},
 }
