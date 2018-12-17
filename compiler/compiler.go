@@ -272,8 +272,23 @@ func (c *Compiler) Compile(node ast.Node) error {
 		}
 
 		// just leaving
+		freeSymbols := c.symbolTable.FreeSymbols
 		numLocals := c.symbolTable.numDefinitions
 		instructions := c.leaveScope()
+
+		// 将这些free变量拉到栈上是在离开内层的函数之后
+		// 思考的角度然后站在外层的symboltable上看这些变量
+		// 对于内层是free，对于外层可能就是local，也可能还是free（嵌套情况下）
+		// 这就是为什么把origin缓存在这里的原因，origin是站在外层的角度看的。
+		// 举个例子，比如说现在在最内层找到一个free变量，不妨假设变量为a，
+		// 按照free的定义a不在local变量，不是builtin，不是global，所以肯定是在某层嵌套的
+		// 函数里定义了此变量(这里也包括外层函数的参数，因为我们把参数按照local处理了)
+		// 那么我们在内层函数里取这个变量用的是OpGetFree
+		// 然后出了这个内层，我们在这里添加这些个symbol到栈上。此时外层视角变成内层视角
+		// 而缓存的恰恰就是
+		for _, s := range freeSymbols {
+			c.loadSymbol(&s)
+		}
 
 		compiledFn := &object.CompiledFunction{
 			Instructions:  instructions,
@@ -283,8 +298,8 @@ func (c *Compiler) Compile(node ast.Node) error {
 		// legacy function without closure
 		// c.emit(code.OpConstant, c.addConstant(compiledFn))
 
-		// still compiled function in this pool, not closure!
-		c.emit(code.OpClosure, c.addConstant(compiledFn), 0)
+		// yes, closure data prepared
+		c.emit(code.OpClosure, c.addConstant(compiledFn), len(freeSymbols))
 
 	case *ast.ReturnStatement:
 		err := c.Compile(node.ReturnValue)
@@ -437,5 +452,7 @@ func (c *Compiler) loadSymbol(s *Symbol) {
 		c.emit(code.OpGetLocal, s.Index)
 	case BuiltinScope:
 		c.emit(code.OpGetBuiltin, s.Index)
+	case FreeScope:
+		c.emit(code.OpGetFree, s.Index)
 	}
 }

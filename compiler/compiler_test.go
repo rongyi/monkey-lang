@@ -951,6 +951,7 @@ fn(a) {
 					code.Make(code.OpReturnValue),
 				},
 				[]code.Instructions{
+					// 参考 compiler的注释
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpClosure, 0, 1),
 					code.Make(code.OpReturnValue),
@@ -975,6 +976,8 @@ fn(a) {
 			expectedConstants: []interface{}{
 				// inner function
 				[]code.Instructions{
+					// 从最内层开始找a，然后一路找过去，发现a是free变量
+					// 同样找b也是这个场景
 					code.Make(code.OpGetFree, 0),
 					code.Make(code.OpGetFree, 1),
 					code.Make(code.OpAdd),
@@ -984,6 +987,8 @@ fn(a) {
 					code.Make(code.OpReturnValue),
 				},
 				[]code.Instructions{
+					// 上面俩free变量
+					//
 					code.Make(code.OpGetFree, 0),
 					code.Make(code.OpGetLocal, 0),
 					code.Make(code.OpClosure, 0, 2),
