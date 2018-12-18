@@ -987,10 +987,11 @@ fn(a) {
 					code.Make(code.OpReturnValue),
 				},
 				[]code.Instructions{
-					// 上面俩free变量
-					//
+					// 中间这层函数看，a是free， 还有自己的local b
 					code.Make(code.OpGetFree, 0),
 					code.Make(code.OpGetLocal, 0),
+					// 看这里的值要看上一层的 FreeSymbols 有多少个，生成指令的时候先离开上层的 scope，然后再遍历
+					// FreeSymbols，然后把 FreeSymbols的数量放在第三个参数上
 					code.Make(code.OpClosure, 0, 2),
 					code.Make(code.OpReturnValue),
 				},

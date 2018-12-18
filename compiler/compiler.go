@@ -284,8 +284,6 @@ func (c *Compiler) Compile(node ast.Node) error {
 		// 按照free的定义a不在local变量，不是builtin，不是global，所以肯定是在某层嵌套的
 		// 函数里定义了此变量(这里也包括外层函数的参数，因为我们把参数按照local处理了)
 		// 那么我们在内层函数里取这个变量用的是OpGetFree
-		// 然后出了这个内层，我们在这里添加这些个symbol到栈上。此时外层视角变成内层视角
-		// 而缓存的恰恰就是
 		for _, s := range freeSymbols {
 			c.loadSymbol(&s)
 		}
