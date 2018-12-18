@@ -193,12 +193,13 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 		}
 	case *ast.LetStatement:
+		// 这里只标注序列，值会在执行时放在stack上
+		symbol := c.symbolTable.Define(node.Name.Value)
 		err := c.Compile(node.Value)
 		if err != nil {
 			return err
 		}
-		// 这里只标注序列，值会在执行时放在stack上
-		symbol := c.symbolTable.Define(node.Name.Value)
+
 		if symbol.Scope == GlobalScope {
 			c.emit(code.OpSetGlobal, symbol.Index)
 		} else {
