@@ -286,11 +286,20 @@ func (vm *VM) Run() error {
 			}
 		case code.OpClosure:
 			constIndex := code.ReadUint16(ins[pc+1:])
-			_ = code.ReadUint8(ins[pc+3:])
+			numFree := code.ReadUint8(ins[pc+3:])
 			// 其实只需要加上操作数长度即可，本身指令那一个字节在循环头部加上了，一再强调这里
 			vm.currentFrame().pc += 3
 
-			err := vm.pushClosure(int(constIndex))
+			err := vm.pushClosure(int(constIndex), int(numFree))
+			if err != nil {
+				return err
+			}
+		case code.OpGetFree:
+			freeIndex := code.ReadUint8(ins[pc+1:])
+			vm.currentFrame().pc++
+
+			currentClosure := vm.currentFrame().cl
+			err := vm.push(currentClosure.Free[freeIndex])
 			if err != nil {
 				return err
 			}
@@ -299,13 +308,20 @@ func (vm *VM) Run() error {
 	return nil
 }
 
-func (vm *VM) pushClosure(constIndex int) error {
+func (vm *VM) pushClosure(constIndex, numFree int) error {
 	constant := vm.constants[constIndex]
 	fn, ok := constant.(*object.CompiledFunction)
 	if !ok {
 		return fmt.Errorf("not a function: %+v", constant)
 	}
-	closure := &object.Closure{Fn: fn}
+	free := make([]object.Object, numFree)
+	for i := 0; i < numFree; i++ {
+		free[i] = vm.stack[vm.sp-numFree+i]
+	}
+
+	vm.sp = vm.sp - numFree
+
+	closure := &object.Closure{Fn: fn, Free: free}
 
 	return vm.push(closure)
 }
